@@ -1,0 +1,8 @@
+cache
+*.o
+a.out
+*.exe
+build/
+*.swp
+perf.data
+perf.data.old
