@@ -1,0 +1,139 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    transition: background 0.3s, color 0.3s;
+}
+
+body.light {
+    background: #f5f5f5;
+    color: #000;
+}
+
+body.dark {
+    background: #1e1e1e;
+    color: #e0e0e0;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.layout {
+    display: flex;
+    gap: 30px;
+    width: 100%;
+    height: calc(100vh - 120px);
+    box-sizing: border-box;
+}
+
+.panel {
+    flex: 0 0 40%;
+    background: var(--panel-bg);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+body.light .panel {
+    --panel-bg: white;
+}
+
+body.dark .panel {
+    --panel-bg: #2b2b2b;
+}
+
+select,
+input {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+    background: var(--input-bg);
+    color: inherit;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+}
+
+body.light select,
+body.light input {
+    --input-bg: white;
+}
+
+body.dark select,
+body.dark input {
+    --input-bg: #3a3a3a;
+}
+
+button {
+    margin-top: auto;
+    padding: 12px;
+    background: #0078ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background: #005fcc;
+}
+
+.chart-container {
+    flex: 1;
+    background: var(--panel-bg);
+    padding: 20px;
+    border-radius: 10px;
+    display: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#chart {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.theme-switch {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.theme-switch input {
+    display: none;
+}
+
+.slider {
+    width: 40px;
+    height: 20px;
+    background: #bbb;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+}
+
+.slider::before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    transition: 0.3s;
+}
+
+input:checked+.slider::before {
+    transform: translateX(20px);
+}
+
+.label-text {
+    font-size: 14px;
+}
