@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Cache Simulation Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h2>Cache Hit Rates</h2>
+    <canvas id="cacheChart" width="700" height="300"></canvas>
+
+    <script>
+    fetch('cache_stats.csv')
+        .then(response => response.text())
+        .then(data => {
+            const rows = data.trim().split('\n').slice(1);
+            const labels = [];
+            const datasets = {};
+
+            rows.forEach(row => {
+                const [accessType, cacheType, hits, misses, hitRate, replacements] = row.split(',');
+                if (!datasets[cacheType]) {
+                    datasets[cacheType] = { label: cacheType, data: [], backgroundColor: cacheType === 'DirectMapping' ? 'red' : cacheType === 'FullyAssociative' ? 'blue' : 'green' };
+                }
+                labels.push(accessType);
+                datasets[cacheType].data.push(parseFloat(hitRate));
+            });
+
+            const ctx = document.getElementById('cacheChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [...new Set(labels)],
+                    datasets: Object.values(datasets)
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'top' }, title: { display: true, text: 'Cache Hit Rates (%)' } },
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

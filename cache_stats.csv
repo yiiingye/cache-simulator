@@ -1,0 +1,7 @@
+AccessType,CacheType,Hits,Misses,HitRate,Replacements
+Random,DirectMapping,18941,181059,9.4705,0
+Random,FullyAssociative,18996,181004,9.498,180992
+Random,2WaySet,18994,181006,9.497,180994
+Sequential,DirectMapping,175000,25000,87.5,0
+Sequential,FullyAssociative,175000,25000,87.5,24988
+Sequential,2WaySet,175000,25000,87.5,24988
