@@ -4,19 +4,23 @@
 <head>
     <meta charset="utf-8">
     <title>Cache Simulator</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=10">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="light">
 
     <header>
-        <h1>Cache Simulator</h1>
+        <div class="hero-title">
+            <h1>Cache Simulator</h1>
+            <p>Interactive Cache Simulation for Computer Architecture</p>
+        </div>
+
 
         <label class="theme-switch">
             <input type="checkbox" id="themeToggle">
             <span class="slider"></span>
-            <span class="label-text">Dark Mode</span>
+            <span class="label-text">Toggle Mode</span>
         </label>
     </header>
 
@@ -34,32 +38,56 @@
             <select id="policy">
                 <option value="LRU">LRU</option>
                 <option value="FIFO">FIFO</option>
-                <option value="RANDOM">Random</option>
+                <option value="Random">Random</option>
             </select>
 
             <label>Access Pattern</label>
             <select id="pattern">
                 <option value="Random">Random</option>
                 <option value="Sequential">Sequential</option>
-                <option value="4Strike">4Strike</option>
-                <option value="ConflictDM">ConflictDM</option>
-                <option value="WorkingSet64">WorkingSet64</option>
-                <option value="StrideConflict">StrideConflict</option>
+                <option value="FourStrike">Four Strike</option>
+                <option value="ConflictDM">Conflict Direct Mapping</option>
+                <option value="WorkingSet64">Working Set 64</option>
+                <option value="StrideConflict">Stride Conflict</option>
             </select>
 
-            <label>Number of Accesses</label>
-            <input id="numAccesses" type="number" value="200000" style="width: 800px;">
+            <label >Number of Accesses</label>
+            <input id="numAccesses" type="number" value="200000" style="width: 100%;">
+
+            <div class="timing-grid">
+                <div style="width: 90%;">
+                    <label for="hitLatency">Hit Latency (cycles)</label>
+                    <input id="hitLatency" type="number" min="0.1" step="0.1" value="1">
+                </div>
+
+                <div style="width: 100%;">
+                    <label for="missPenalty">Miss Penalty (cycles)</label>
+                    <input id="missPenalty" type="number" min="0" step="1" value="80">
+                </div>
+            </div>
+
+            <label for="cpuFrequencyGHz">CPU Frequency (GHz)</label>
+            <input id="cpuFrequencyGHz" type="number" min="0.1" step="0.1" value="3.0" style="width: 100%;">
+
+            <p class="timing-note">
+                Estimated execution time uses: total cycles = accesses × hit latency + misses × miss penalty.
+            </p>
 
             <button onclick="runSimulation()">Run Simulation</button>
         </div>
 
-        <div class="chart-container" id="chartContainer">
-            <canvas id="chart"></canvas>
+        <div id="val" class="val">
+            <div class="chart-container" id="chartContainer" style="display:none;">
+                <canvas id="chart"></canvas>
+
+            </div>
+            <div id="counts"></div>
         </div>
+
 
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=10"></script>
 </body>
 
 </html>

@@ -1,6 +1,7 @@
 #include "simulator.hpp"
 
-CacheDM::CacheDM() : lines(CACHE_LINES) {}
+CacheDM::CacheDM() : lines(CACHE_LINES), replacements(0) {}
+
 void CacheDM::access(unsigned long address) {
   accesses++;
   unsigned long block_addr = address / BLOCK_SIZE;
@@ -13,6 +14,9 @@ void CacheDM::access(unsigned long address) {
     hits++;
   } else {
     misses++;
+    if (line.valid) {
+      replacements++;
+    }
     line.valid = true;
     line.tag = tag;
   }
@@ -29,24 +33,21 @@ void CacheDM::clean() {
 
 CacheFullyAssoc::CacheFullyAssoc(Policy p)
     : lines(CACHE_LINES), replacements(0), policy(p),
-      rng(std::random_device{}()) {}
+      rng(std::random_device{}()), timer(0) {
+        
+      }
 
 void CacheFullyAssoc::access(unsigned long address) {
   accesses++;
   unsigned long block_addr = address / BLOCK_SIZE;
   unsigned long tag = block_addr;
 
-  if (policy == Policy::LRU || policy == Policy::FIFO) {
-    for (auto &line : lines)
-      if (line.valid)
-        line.age++;
-  }
-
   for (auto &line : lines) {
     if (line.valid && line.tag == tag) {
       hits++;
-      if (policy == Policy::LRU)
-        line.age = 0;
+      if (policy == Policy::LRU) {
+        line.age = timer++;
+      }
       return;
     }
   }
@@ -57,7 +58,7 @@ void CacheFullyAssoc::access(unsigned long address) {
     if (!line.valid) {
       line.valid = true;
       line.tag = tag;
-      line.age = 0;
+      line.age = timer++;
       return;
     }
   }
@@ -70,18 +71,19 @@ void CacheFullyAssoc::access(unsigned long address) {
     victim = dist(rng);
   } else {
     for (size_t i = 1; i < lines.size(); ++i)
-      if (lines[i].age > lines[victim].age)
+      if (lines[i].age < lines[victim].age)
         victim = i;
   }
 
   lines[victim].tag = tag;
   lines[victim].valid = true;
-  lines[victim].age = 0;
+  lines[victim].age = timer++;
 }
 
 void CacheFullyAssoc::clean() {
   Cache::clean();
   replacements = 0;
+  timer = 0;
   for (auto &line : lines) {
     line.valid = false;
     line.age = 0;
@@ -90,12 +92,14 @@ void CacheFullyAssoc::clean() {
 }
 
 Cache2SetWayAssociative::Cache2SetWayAssociative(Policy p)
-    : sets(NUM_SETS, std::vector<TwoWayLine>(TWO_WAY_SET)), replacements(0),
-      policy(p), rng(std::random_device{}()) {}
+    : sets(NUM_SETS, std::vector<TwoWayLine>(TWO_WAY_SET)),
+      replacements(0), policy(p),
+      rng(std::random_device{}()), timer(0) {}
 
 void Cache2SetWayAssociative::clean() {
   Cache::clean();
   replacements = 0;
+  timer = 0;
   for (auto &set : sets)
     for (auto &line : set)
       line = {};
@@ -109,17 +113,12 @@ void Cache2SetWayAssociative::access(unsigned long address) {
 
   auto &set = sets[set_idx];
 
-  if (policy == Policy::LRU || policy == Policy::FIFO) {
-    for (auto &line : set)
-      if (line.valid)
-        line.age++;
-  }
-
   for (auto &line : set) {
     if (line.valid && line.tag == tag) {
       hits++;
-      if (policy == Policy::LRU)
-        line.age = 0;
+      if (policy == Policy::LRU) {
+        line.age = timer++;
+      }
       return;
     }
   }
@@ -130,7 +129,7 @@ void Cache2SetWayAssociative::access(unsigned long address) {
     if (!line.valid) {
       line.valid = true;
       line.tag = tag;
-      line.age = 0;
+      line.age = timer++;
       return;
     }
   }
@@ -143,13 +142,13 @@ void Cache2SetWayAssociative::access(unsigned long address) {
     victim = dist(rng);
   } else {
     for (size_t i = 1; i < set.size(); ++i)
-      if (set[i].age > set[victim].age)
+      if (set[i].age < set[victim].age)
         victim = i;
   }
 
   set[victim].tag = tag;
   set[victim].valid = true;
-  set[victim].age = 0;
+  set[victim].age = timer++;
 }
 
 unsigned long gen_address(AccessPattern pattern, int i, std::mt19937 &rng,
@@ -162,16 +161,14 @@ unsigned long gen_address(AccessPattern pattern, int i, std::mt19937 &rng,
     return i % MEMORY_SIZE;
 
   case AccessPattern::FourStrike: {
-    // 20 bloques distintos en ciclo → más que las 16 líneas de FA
     unsigned long block = i % 20;
     return block * BLOCK_SIZE;
   }
 
   case AccessPattern::ConflictDM: {
-    // 3 bloques distintos que caen SIEMPRE en el MISMO índice
     unsigned long blockA = 0;
-    unsigned long blockB = CACHE_LINES;     // 16
-    unsigned long blockC = CACHE_LINES * 2; // 32
+    unsigned long blockB = CACHE_LINES;
+    unsigned long blockC = CACHE_LINES * 2;
 
     unsigned long block;
     if (i % 3 == 0)
@@ -194,4 +191,23 @@ unsigned long gen_address(AccessPattern pattern, int i, std::mt19937 &rng,
   }
 
   return 0;
+}
+
+TimingStats calculate_timing_stats(const Cache &cache,
+                                   const TimingConfig &config) {
+  TimingStats stats;
+  if (cache.accesses == 0) {
+    return stats;
+  }
+
+  stats.totalCycles =
+      (cache.accesses * config.hitLatencyCycles) +
+      (cache.misses * config.missPenaltyCycles);
+  stats.amatCycles = stats.totalCycles / cache.accesses;
+
+  if (config.cpuFrequencyGHz > 0.0) {
+    stats.estimatedTimeNs = stats.totalCycles / config.cpuFrequencyGHz;
+  }
+
+  return stats;
 }

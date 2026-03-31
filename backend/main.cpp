@@ -18,6 +18,10 @@ int main(int argc, char **argv) {
   std::string policyStr = argv[2];
   std::string patternStr = argv[3];
   int numAccesses = std::stoi(argv[4]);
+  if (numAccesses < 0) {
+    std::cout << "numAccesses must be >= 0\n";
+    return 1;
+  }
 
   Policy policy = Policy::LRU;
   if (policyStr == "FIFO")
@@ -60,8 +64,15 @@ int main(int argc, char **argv) {
 
   std::cout << "Hits: " << cache->hits << "\n";
   std::cout << "Misses: " << cache->misses << "\n";
-  std::cout << "HitRate: " << (100.0 * cache->hits / cache->accesses) << "\n";
+  double hitRate =
+      cache->accesses ? (100.0 * cache->hits / cache->accesses) : 0.0;
+  TimingConfig timingConfig;
+  TimingStats timingStats = calculate_timing_stats(*cache, timingConfig);
+  std::cout << "HitRate: " << hitRate << "\n";
   std::cout << "Replacements: " << cache->getReplacements() << "\n";
+  std::cout << "TotalCycles: " << timingStats.totalCycles << "\n";
+  std::cout << "AMAT: " << timingStats.amatCycles << "\n";
+  std::cout << "EstimatedTimeNs: " << timingStats.estimatedTimeNs << "\n";
 
   delete cache;
   return 0;

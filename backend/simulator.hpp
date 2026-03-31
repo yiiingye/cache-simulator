@@ -20,6 +20,18 @@ enum class AccessPattern {
   StrideConflict
 };
 
+struct TimingConfig {
+  double hitLatencyCycles = 1.0;
+  double missPenaltyCycles = 80.0;
+  double cpuFrequencyGHz = 3.0;
+};
+
+struct TimingStats {
+  double totalCycles = 0.0;
+  double amatCycles = 0.0;
+  double estimatedTimeNs = 0.0;
+};
+
 class Cache {
 public:
   unsigned long hits = 0;
@@ -61,6 +73,7 @@ public:
   unsigned long replacements = 0;
   Policy policy;
   std::mt19937 rng;
+  unsigned long timer = 0;
 
   CacheFullyAssoc(Policy p);
   void access(unsigned long address) override;
@@ -80,6 +93,7 @@ public:
   unsigned long replacements = 0;
   Policy policy;
   std::mt19937 rng;
+  unsigned long timer = 0;
 
   Cache2SetWayAssociative(Policy p);
   void access(unsigned long address) override;
@@ -89,3 +103,6 @@ public:
 
 unsigned long gen_address(AccessPattern pattern, int i, std::mt19937 &rng,
                           std::uniform_int_distribution<unsigned long> &dist);
+
+TimingStats calculate_timing_stats(const Cache &cache,
+                                   const TimingConfig &config);
