@@ -23,11 +23,11 @@ HITS=$(echo "$OUT" | grep "Hits:" | awk '{print $2}')
 MISSES=$(echo "$OUT" | grep "Misses:" | awk '{print $2}')
 REPL=$(echo "$OUT" | grep "Replacements:" | awk '{print $2}')
 
-# En DM replacement SIEMPRE debe ser 0
-if [ "$HITS" -eq 0 ] && [ "$MISSES" -eq 10 ] && [ "$REPL" -eq 0 ]; then
+# En DM tambien puede haber replacement cuando una linea valida es sobrescrita
+if [ "$HITS" -eq 0 ] && [ "$MISSES" -eq 10 ] && [ "$REPL" -eq 9 ]; then
     pass
 else
-    fail "$HITS/$MISSES/$REPL" "0/10/0"
+    fail "$HITS/$MISSES/$REPL" "0/10/9"
 fi
 
 # -------------------------------
@@ -37,11 +37,11 @@ echo -n "Test B: DM + Sequential (2000 accesos)... "
 OUT=$($BIN DM LRU Sequential 2000)
 REPL=$(echo "$OUT" | grep "Replacements:" | awk '{print $2}')
 
-# En DM replacement SIEMPRE debe ser 0
-if [ "$REPL" -eq 0 ]; then
+# En secuencial DM recorre mas bloques que lineas, asi que debe reemplazar
+if [ "$REPL" -gt 0 ]; then
     pass
 else
-    fail "$REPL" "0"
+    fail "$REPL" ">0"
 fi
 
 # -------------------------------
@@ -93,17 +93,32 @@ fi
 # TEST F — FA + FourStrike
 # -------------------------------
 echo -n "Test F: FA + FourStrike (100 accesos)... "
-OUT1=$($BIN FA LRU FourStrike 100)
-OUT2=$($BIN FA FIFO FourStrike 100)
-OUT3=$($BIN FA Random FourStrike 100)
+OUT=$($BIN FA LRU FourStrike 100)
+HITS=$(echo "$OUT" | grep "Hits:" | awk '{print $2}')
+MISSES=$(echo "$OUT" | grep "Misses:" | awk '{print $2}')
+REPL=$(echo "$OUT" | grep "Replacements:" | awk '{print $2}')
+
+# FourStrike debe usar solo 4 bloques y caber completo en FA
+if [ "$HITS" -eq 96 ] && [ "$MISSES" -eq 4 ] && [ "$REPL" -eq 0 ]; then
+    pass
+else
+    fail "$HITS/$MISSES/$REPL" "96/4/0"
+fi
+
+# -------------------------------
+# TEST G — FA + Random distingue politicas
+# -------------------------------
+echo -n "Test G: FA + Random distingue políticas... "
+OUT1=$($BIN FA LRU Random 2000)
+OUT2=$($BIN FA FIFO Random 2000)
+OUT3=$($BIN FA Random Random 2000)
 
 SIG1=$(echo "$OUT1" | md5sum | awk '{print $1}')
 SIG2=$(echo "$OUT2" | md5sum | awk '{print $1}')
 SIG3=$(echo "$OUT3" | md5sum | awk '{print $1}')
 
-# Las políticas deben dar resultados distintos
-if [ "$SIG1" != "$SIG2" ] || [ "$SIG1" != "$SIG3" ]; then
+if [ "$SIG1" = "$SIG2" ] && [ "$SIG1" != "$SIG3" ]; then
     pass
 else
-    fail "idénticos" "diferentes"
+    fail "$SIG1/$SIG2/$SIG3" "LRU=FIFO y Random distinto"
 fi

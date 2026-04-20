@@ -1,93 +1,134 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
-    <title>Cache Simulator</title>
-    <link rel="stylesheet" href="style.css?v=10">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CacheLab</title>
+    <link rel="stylesheet" href="style.css?v=11">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="light">
-
-    <header>
-        <div class="hero-title">
-            <h1>Cache Simulator</h1>
-            <p>Interactive Cache Simulation for Computer Architecture</p>
-        </div>
-
-
-        <label class="theme-switch">
-            <input type="checkbox" id="themeToggle">
-            <span class="slider"></span>
-            <span class="label-text">Toggle Mode</span>
-        </label>
-    </header>
-
-    <div class="layout">
-
-        <div class="panel">
-            <label>Cache Type</label>
-            <select id="cacheType">
-                <option value="FA">Fully Associative</option>
-                <option value="DM">Direct Mapped</option>
-                <option value="2W">2-Way Set Associative</option>
-            </select>
-
-            <label for="policy">Replacement Policy</label>
-            <select id="policy">
-                <option value="LRU">LRU</option>
-                <option value="FIFO">FIFO</option>
-                <option value="Random">Random</option>
-            </select>
-
-            <label>Access Pattern</label>
-            <select id="pattern">
-                <option value="Random">Random</option>
-                <option value="Sequential">Sequential</option>
-                <option value="FourStrike">Four Strike</option>
-                <option value="ConflictDM">Conflict Direct Mapping</option>
-                <option value="WorkingSet64">Working Set 64</option>
-                <option value="StrideConflict">Stride Conflict</option>
-            </select>
-
-            <label >Number of Accesses</label>
-            <input id="numAccesses" type="number" value="200000" style="width: 100%;">
-
-            <div class="timing-grid">
-                <div style="width: 90%;">
-                    <label for="hitLatency">Hit Latency (cycles)</label>
-                    <input id="hitLatency" type="number" min="0.1" step="0.1" value="1">
-                </div>
-
-                <div style="width: 100%;">
-                    <label for="missPenalty">Miss Penalty (cycles)</label>
-                    <input id="missPenalty" type="number" min="0" step="1" value="80">
-                </div>
+    <div class="page-shell">
+        <header class="topbar">
+            <div class="brand-block">
+                <p class="eyebrow">Architecture Analysis Console</p>
+                <h1>CacheLab</h1>
+                <p class="hero-copy">
+                    Evaluate cache behavior, replacement pressure, and timing cost with a compact simulation workflow.
+                </p>
             </div>
 
-            <label for="cpuFrequencyGHz">CPU Frequency (GHz)</label>
-            <input id="cpuFrequencyGHz" type="number" min="0.1" step="0.1" value="3.0" style="width: 100%;">
+            <div class="topbar-meta">
+                <div class="meta-chip">
+                    <span class="meta-label">Scope</span>
+                    <span class="meta-value">DM · FA · 2W</span>
+                </div>
 
-            <p class="timing-note">
-                Estimated execution time uses: total cycles = accesses × hit latency + misses × miss penalty.
-            </p>
-
-            <button onclick="runSimulation()">Run Simulation</button>
-        </div>
-
-        <div id="val" class="val">
-            <div class="chart-container" id="chartContainer" style="display:none;">
-                <canvas id="chart"></canvas>
-
+                <label class="theme-switch" for="themeToggle">
+                    <span class="label-text">Dark Interface</span>
+                    <input type="checkbox" id="themeToggle">
+                    <span class="slider"></span>
+                </label>
             </div>
-            <div id="counts"></div>
-        </div>
+        </header>
 
+        <main class="layout">
+            <section class="panel control-panel">
+                <div class="section-heading">
+                    <p class="section-kicker">— Configuration —</p>
+                </div>
 
+                <div class="field-grid">
+                    <div class="field">
+                        <label for="cacheType">Cache Type</label>
+                        <select id="cacheType">
+                            <option value="FA">Fully Associative</option>
+                            <option value="DM">Direct Mapped</option>
+                            <option value="2W">2-Way Set Associative</option>
+                        </select>
+                    </div>
+
+                    <div class="field" id="policyField">
+                        <label for="policy">Replacement Policy</label>
+                        <select id="policy">
+                            <option value="LRU">LRU</option>
+                            <option value="FIFO">FIFO</option>
+                            <option value="Random">Random</option>
+                        </select>
+                    </div>
+
+                    <div class="field field-span">
+                        <label for="pattern">Access Pattern</label>
+                        <select id="pattern">
+                            <option value="Random">Random</option>
+                            <option value="Sequential">Sequential</option>
+                            <option value="FourStrike">Four Strike</option>
+                            <option value="ConflictDM">Conflict Direct Mapping</option>
+                            <option value="WorkingSet64">Working Set 64</option>
+                            <option value="StrideConflict">Stride Conflict</option>
+                        </select>
+                    </div>
+
+                    <div class="field field-span">
+                        <label for="numAccesses">Number of Accesses</label>
+                        <input id="numAccesses" type="number" value="200000">
+                    </div>
+                </div>
+
+                <div class="section-heading compact">
+                    <p class="section-kicker">— Timing Model —</p>
+                </div>
+
+                <div class="timing-grid">
+                    <div class="field">
+                        <label for="hitLatency">Hit Latency (cycles)</label>
+                        <input id="hitLatency" type="number" min="0.1" step="0.1" value="1">
+                    </div>
+
+                    <div class="field">
+                        <label for="missPenalty">Miss Penalty (cycles)</label>
+                        <input id="missPenalty" type="number" min="0" step="1" value="80">
+                    </div>
+
+                    <div class="field field-span">
+                        <label for="cpuFrequencyGHz">CPU Frequency (GHz)</label>
+                        <input id="cpuFrequencyGHz" type="number" min="0.1" step="0.1" value="3.0">
+                    </div>
+                </div>
+
+                <p class="timing-note">
+                    Total cycles = accesses × hit latency + misses × miss penalty. This is an analytical estimate, not a cycle-accurate processor model.
+                </p>
+
+                <button class="run-button" onclick="runSimulation()">Run Simulation</button>
+            </section>
+
+            <section id="val" class="val">
+                <div class="results-header">
+                    <div>
+                        <p class="section-kicker">Results</p>
+                        <h2>Performance Snapshot</h2>
+                    </div>
+                    <p class="results-copy">Run a configuration to inspect outcome distribution, replacement pressure, and estimated timing.</p>
+                </div>
+
+                <div class="chart-container" id="chartContainer" style="display:none;">
+                    <canvas id="chart"></canvas>
+                </div>
+
+                <div id="emptyState" class="empty-state">
+                    <p class="empty-title">No simulation loaded</p>
+                    <p class="empty-copy">The result panel will populate after the first run with hit rate, replacements, AMAT, and timing estimates.</p>
+                </div>
+
+                <div id="counts"></div>
+            </section>
+        </main>
     </div>
 
-    <script src="app.js?v=10"></script>
+    <script src="app.js?v=11"></script>
 </body>
 
 </html>

@@ -89,7 +89,7 @@ int main() {
           : (patternStr == "WorkingSet64") ? AccessPattern::WorkingSet64
                                            : AccessPattern::StrideConflict;
 
-      std::mt19937 rng(std::random_device{}());
+      std::mt19937 rng(RNG_SEED);
       std::uniform_int_distribution<unsigned long> dist(0, MEMORY_SIZE - 1);
 
       cache->clean();

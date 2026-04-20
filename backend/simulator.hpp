@@ -8,6 +8,7 @@ constexpr size_t BLOCK_SIZE = 8;
 constexpr size_t MEMORY_SIZE = 1024;
 constexpr size_t TWO_WAY_SET = 2;
 constexpr size_t NUM_SETS = CACHE_LINES / TWO_WAY_SET;
+constexpr unsigned int RNG_SEED = 12345;
 
 enum class Policy { LRU, FIFO, Random };
 

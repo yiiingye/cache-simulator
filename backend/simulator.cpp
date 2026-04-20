@@ -33,9 +33,7 @@ void CacheDM::clean() {
 
 CacheFullyAssoc::CacheFullyAssoc(Policy p)
     : lines(CACHE_LINES), replacements(0), policy(p),
-      rng(std::random_device{}()), timer(0) {
-        
-      }
+      rng(RNG_SEED), timer(0) {}
 
 void CacheFullyAssoc::access(unsigned long address) {
   accesses++;
@@ -94,7 +92,7 @@ void CacheFullyAssoc::clean() {
 Cache2SetWayAssociative::Cache2SetWayAssociative(Policy p)
     : sets(NUM_SETS, std::vector<TwoWayLine>(TWO_WAY_SET)),
       replacements(0), policy(p),
-      rng(std::random_device{}()), timer(0) {}
+      rng(RNG_SEED), timer(0) {}
 
 void Cache2SetWayAssociative::clean() {
   Cache::clean();
@@ -161,7 +159,7 @@ unsigned long gen_address(AccessPattern pattern, int i, std::mt19937 &rng,
     return i % MEMORY_SIZE;
 
   case AccessPattern::FourStrike: {
-    unsigned long block = i % 20;
+    unsigned long block = i % 4;
     return block * BLOCK_SIZE;
   }
 

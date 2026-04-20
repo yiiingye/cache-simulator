@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  std::mt19937 rng(12345);
+  std::mt19937 rng(RNG_SEED);
   std::uniform_int_distribution<unsigned long> dist(0, MEMORY_SIZE - 1);
 
   for (int i = 0; i < numAccesses; i++) {

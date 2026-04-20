@@ -1,107 +1,73 @@
-# Cache Simulator
+# CacheLab — Interactive Cache Architecture Simulator
 
-Cache Simulator is a computer architecture project for exploring how different cache organizations behave under different memory-access patterns. It combines a C++ simulation backend with a lightweight browser UI, making it easy to run experiments and inspect the resulting metrics.
+CacheLab is an interactive computer architecture simulation tool designed to analyze and visualize cache behavior under different memory access patterns.
 
-The project is designed to help answer questions such as:
+It was developed as a personal project to deepen my understanding of memory hierarchy and cache performance through implementation and experimentation beyond coursework.
 
-- How do direct-mapped, fully associative, and 2-way set-associative caches differ in practice?
-- How do access patterns affect hit rate, miss rate, and replacements?
-- How do cache outcomes translate into a simple timing estimate?
+## What this project explores
 
-## Overview
+This simulator explores how different cache design choices affect system performance through controlled experiments involving architecture, memory access patterns, and replacement strategies.
 
-The simulator reports two categories of results:
+It focuses on:
 
-- Cache behavior: hits, misses, replacements, hit rate, and miss rate
-- Timing estimation: total cycles, average memory access time, and estimated execution time
-
-This is not a full processor or pipeline simulator. The timing model is intentionally simple and is intended to provide a practical approximation rather than cycle-accurate hardware analysis.
+- How direct-mapped, fully associative, and set-associative caches behave in practice
+- How memory access patterns influence cache hit rate and performance
+- How replacement policies affect cache efficiency
+- How architectural decisions translate into overall system performance
 
 ## Features
 
-- Simulates `DM`, `FA`, and `2W` cache organizations
-- Supports `LRU`, `FIFO`, and `Random` replacement policies
-- Includes multiple built-in memory-access patterns
-- Exposes simulation results through a local HTTP API
-- Provides a browser-based interface for interactive experimentation
-- Estimates execution cost using configurable timing parameters
+- Simulation of multiple cache architectures (Direct-Mapped, Fully Associative, Set-Associative)
+- Support for LRU, FIFO, and Random replacement policies
+- Predefined memory access patterns for workload analysis
+- Interactive browser-based interface for experimentation
+- Quantitative performance evaluation using hit rate, miss rate, and AMAT
 
-## Supported Configurations
+## Performance model
 
-### Cache Types
+CacheLab uses a simplified performance model based on cycle estimation to compute:
 
-- `DM` — Direct Mapped
-- `FA` — Fully Associative
-- `2W` — 2-Way Set Associative
+- Total cycles
+- Average Memory Access Time (AMAT)
+- Estimated execution time
 
-### Replacement Policies
+This model is intended for educational purposes rather than cycle-accurate hardware simulation.
 
-- `LRU`
-- `FIFO`
-- `Random`
 
-Replacement policy only affects associative caches. In direct-mapped mode, placement is determined entirely by the address mapping.
+## Access patterns
 
-### Access Patterns
+The simulator includes synthetic workloads designed to stress different cache behaviors:
 
-- `Random` — random accesses across the simulated memory space
-- `Sequential` — sequential traversal through memory
-- `FourStrike` — repeated accesses to a very small set of blocks
-- `ConflictDM` — a conflict-heavy pattern that stresses direct-mapped caches
-- `WorkingSet64` — repeated accesses within a limited working set
-- `StrideConflict` — strided accesses intended to trigger repeated set conflicts
+- Random: unpredictable memory access
+- Sequential: linear memory traversal
+- FourStrike: repeated access to a small working set
+- ConflictDM: stress test for direct-mapped caches
+- WorkingSet64: locality-based access pattern
+- StrideConflict: strided access patterns inducing cache conflicts
 
-## How the Simulation Works
+## Metrics
 
-Each run generates a sequence of memory accesses and applies them to the selected cache model. For every access, the simulator determines whether it is:
+For each simulation, CacheLab reports:
 
-- A `hit`: the required block is already in the cache
-- A `miss`: the block is not present and must be brought into the cache
-- A `replacement`: an existing valid line is evicted to make room for a new block
+- Hits and misses
+- Hit rate
+- Number of cache replacements
+- Total cycles (estimated)
+- Average Memory Access Time (AMAT)
+- Estimated execution time
 
-From these outcomes, the simulator computes summary statistics and timing estimates.
+## System overview
 
-Important distinction:
+The system consists of two main components:
 
-- Every replacement happens on a miss
-- Not every miss causes a replacement, because the cache may still contain invalid or empty lines
+- Backend (C++): simulation engine and HTTP API
+- Frontend (HTML/JavaScript): interactive visualization and experiment control
 
-## Timing Model
+## Why this project matters
 
-The project includes a simple timing model based on three user-controlled inputs:
+Understanding cache behavior is essential for optimizing both hardware and software performance.
 
-- `Hit Latency (cycles)` — base cost applied to every access
-- `Miss Penalty (cycles)` — additional cost applied when an access misses
-- `CPU Frequency (GHz)` — used to convert cycle count into nanoseconds
-
-The formulas are:
-
-```text
-totalCycles = accesses * hitLatency + misses * missPenalty
-AMAT (Average Memory Access Time) = totalCycles / accesses
-estimatedTimeNs = totalCycles / cpuFrequencyGHz
-```
-
-Clarification:
-
-- Replacements are tracked and reported as a cache metric
-- Replacements do not currently add a separate cycle cost
-- Their timing impact is only reflected indirectly when they occur as part of a miss
-
-## Metrics Reported
-
-The UI and API expose the following values:
-
-- `hits`
-- `misses`
-- `hitRate`
-- `replacements`
-- `hitLatency`
-- `missPenalty`
-- `cpuFrequencyGHz`
-- `totalCycles`
-- `amat`
-- `estimatedTimeNs`
+CacheLab provides an interactive environment to explore how architectural decisions impact computational efficiency in practice.
 
 ## Project Structure
 
@@ -223,3 +189,5 @@ This prints the simulation summary directly in the terminal.
 - Add multi-level cache simulation
 - Expand automated test coverage
 - Support side-by-side comparison between configurations
+
+This project was implemented as a personal engineering effort combining systems programming and computer architecture concepts.
